@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rainbow Text Effect</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+        }
+
+        .rainbow-text {
+            font-size: 4rem;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            user-select: none;
+        }
+
+        .controls {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .control-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .input-group {
+            margin: 15px 0;
+        }
+
+        .text-input {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 25px;
+            font-size: 16px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            width: 250px;
+        }
+
+        .text-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .speed-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 15px 0;
+            color: white;
+        }
+
+        .speed-slider {
+            margin: 0 15px;
+            width: 200px;
+        }
+
+        @media (max-width: 768px) {
+            .rainbow-text {
+                font-size: 2.5rem;
+            }
+            
+            .text-input {
+                width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="rainbow-text" id="rainbowText">RAINBOW TEXT</div>
+    
+    <div class="controls">
+        <div class="input-group">
+            <input type="text" class="text-input" id="textInput" placeholder="Enter your text here..." value="RAINBOW TEXT">
+        </div>
+        
+        <div class="speed-control">
+            <span>Slow</span>
+            <input type="range" class="speed-slider" id="speedSlider" min="20" max="200" value="100">
+            <span>Fast</span>
+        </div>
+        
+        <button class="control-btn" id="playBtn">Pause</button>
+        <button class="control-btn" id="resetBtn">Reset</button>
+    </div>
+
+    <script>
+        class RainbowText {
+            constructor() {
+                this.textElement = document.getElementById('rainbowText');
+                this.textInput = document.getElementById('textInput');
+                this.speedSlider = document.getElementById('speedSlider');
+                this.playBtn = document.getElementById('playBtn');
+                this.resetBtn = document.getElementById('resetBtn');
+                
+                this.text = 'RAINBOW TEXT';
+                this.hue = 0;
+                this.isPlaying = true;
+                this.speed = 100;
+                this.animationId = null;
+                this.lastTime = 0;
+                
+                this.init();
+            }
+            
+            init() {
+                this.setupEventListeners();
+                this.animate();
+            }
+            
+            setupEventListeners() {
+                this.textInput.addEventListener('input', (e) => {
+                    this.text = e.target.value || 'RAINBOW TEXT';
+                    this.updateText();
+                });
+                
+                this.speedSlider.addEventListener('input', (e) => {
+                    this.speed = parseInt(e.target.value);
+                });
+                
+                this.playBtn.addEventListener('click', () => {
+                    this.togglePlay();
+                });
+                
+                this.resetBtn.addEventListener('click', () => {
+                    this.reset();
+                });
+            }
+            
+            updateText() {
+                const chars = this.text.split('');
+                const coloredChars = chars.map((char, index) => {
+                    if (char === ' ') {
+                        return '<span>&nbsp;</span>';
+                    }
+                    const charHue = (this.hue + (index * 30)) % 360;
+                    const color = `hsl(${charHue}, 100%, 70%)`;
+                    return `<span style="color: ${color}">${char}</span>`;
+                });
+                
+                this.textElement.innerHTML = coloredChars.join('');
+            }
+            
+            animate(currentTime = 0) {
+                if (!this.isPlaying) return;
+                
+                if (currentTime - this.lastTime >= (220 - this.speed)) {
+                    this.hue = (this.hue + 2) % 360;
+                    this.updateText();
+                    this.lastTime = currentTime;
+                }
+                
+                this.animationId = requestAnimationFrame((time) => this.animate(time));
+            }
+            
+            togglePlay() {
+                this.isPlaying = !this.isPlaying;
+                this.playBtn.textContent = this.isPlaying ? 'Pause' : 'Play';
+                
+                if (this.isPlaying) {
+                    this.animate();
+                } else {
+                    cancelAnimationFrame(this.animationId);
+                }
+            }
+            
+            reset() {
+                this.hue = 0;
+                this.updateText();
+            }
+        }
+        
+        // Initialize the rainbow text effect when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new RainbowText();
+        });
+    </script>
+</body>
+</html>
